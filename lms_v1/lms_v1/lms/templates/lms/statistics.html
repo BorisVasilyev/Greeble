@@ -1,0 +1,25 @@
+{% extends "lms/base_with_sidebar.html" %}
+
+{% block content %}
+<h1 class="w3-text-teal">User statistics</h1>
+{% if user_slide_view_list %}
+    <table width="800px">
+        <tr>
+            <td><b>User Name</b></td>
+            <td><b>Course Name</b></td>
+            <td><b>Slide Name</b></td>
+            <td><b>Last View Time</b></td>
+        </tr>
+        {% for user_slide_view in user_slide_view_list %}
+            <tr>
+                <td>{{ user_slide_view.user_name }}</td>
+                <td>{{ user_slide_view.course_name }}</td>
+                <td>{{ user_slide_view.slide_name }}</td>
+                <td>{{ user_slide_view.last_view_time }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>There is no statistics currently available.</p>
+{% endif %}
+{% endblock %}

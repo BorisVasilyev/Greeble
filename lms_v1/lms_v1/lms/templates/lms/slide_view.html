@@ -1,0 +1,72 @@
+{% extends "lms/base_no_sidebar.html" %}
+
+{% block script %}
+{% if slide.type.code == "quiz" %}
+    <script>
+        const slide_id={{ slide.id }}
+
+        window.onload = function() {
+            var a = document.getElementById("check_answer");
+
+            a.onclick = function() {
+                options = document.getElementsByName("options");
+
+                selected_answer_id = 0;
+
+                for(i = 0; i < options.length; i++) {
+                    if(options[i].checked == true) {
+                        selected_answer_id = options[i].value;
+                    }
+                }
+
+                if(selected_answer_id != 0) {
+                    var answer_data = JSON.stringify({cur_slide_id: slide_id, cur_answer_id: selected_answer_id});
+
+                    params = {headers:{"content-type":"application/json; charset=UTF-8"}, body:answer_data, method:"POST"};
+
+                    fetch('/lms/validate_answer', params).then(function(response){return response.text().then(function(text) {
+                        res = document.getElementById("result");
+
+                        if (text == "true") {
+                            res.textContent = "Correct!";
+                            res.style.color = "#00ff00";
+                        } else {
+                            res.textContent = "Incorrect :(";
+                            res.style.color = "#ff0000";
+                        }
+                    })});
+                }
+
+                return false;
+            }
+        }
+    </script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<h1 class="w3-text-teal">{{ course.name }}: {{ slide.name }}</h1>
+<p>
+{% autoescape off %}
+    {{ slide.content|safe }}
+{% endautoescape %}
+</p>
+{% if slide.type.code == "quiz" %}
+    <p>Select your answer:</p>
+
+    {% for answer in answers_list %}
+        <input type="radio" name="options" id="option_{{ answer.id }}" value="{{ answer.id }}">{{ answer.text }}</p>
+    {% endfor %}
+
+    <a id="check_answer" href="#">Check my answer</a>
+
+    <p id="result">Result here</p>
+{% endif %}
+{% if next_slide_id > 0 %}
+    <p><a href="/lms/course/{{ course.id }}/slide/{{ next_slide_id }}">Next slide</a></p>
+{% endif %}
+{% if previous_slide_id > 0 %}
+    <p><a href="/lms/course/{{ course.id }}/slide/{{ previous_slide_id }}">Previous slide</a></p>
+{% endif %}
+<p><a href="/lms/course/{{ course.id }}">Back to the course</a></p>
+{% endblock %}

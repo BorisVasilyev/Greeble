@@ -1,0 +1,43 @@
+{% extends "lms/base_with_sidebar.html" %}
+
+{% block content %}
+<h1 class="w3-text-teal">Administration</h1>
+<h3>(For Greeble administrative users)</h3>
+<ul>
+    <li>Manage clients</li>
+    <li>Manage users</li>
+    <li>Manage global settings (?)</li>
+</ul>
+
+{% if user_list %}
+    <table width="1200px">
+        <tr>
+            <td><b>User Name</b></td>
+            <td><b>Last Login</b></td>
+            <td><b>Is Superuser</b></td>
+            <td><b>First Name</b></td>
+            <td><b>Email</b></td>
+            <td><b>Is Staff</b></td>
+            <td><b>Is Active</b></td>
+            <td><b>Date Joined</b></td>
+            <td><b>Last Name</b></td>
+        </tr>
+        {% for user in user_list %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.last_login }}</td>
+                <td>{{ user.is_superuser }}</td>
+                <td>{{ user.first_name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.is_staff }}</td>
+                <td>{{ user.is_active }}</td>
+                <td>{{ user.date_joined }}</td>
+                <td>{{ user.last_name }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>There are no users.</p>
+{% endif %}
+
+{% endblock %}

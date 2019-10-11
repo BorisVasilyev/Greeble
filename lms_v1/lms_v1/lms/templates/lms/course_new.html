@@ -1,0 +1,15 @@
+{% extends "lms/base_with_sidebar.html" %}
+
+{% block content %}
+<h1 class="w3-text-teal">You're creating a new course</h1>
+
+<form action="{% url 'add_course' %}" method="post">
+{% csrf_token %}
+    <p><b>Course name:</b></p>
+    <input type="text" name="course_name" size="60"/>
+    <p><b>Course description:</b></p>
+    <textarea name="course_description" rows="10" cols="60"></textarea>
+    </p>
+    <input type="submit" value="Save course" />
+</form>
+{% endblock %}

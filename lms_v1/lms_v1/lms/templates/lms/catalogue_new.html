@@ -1,0 +1,24 @@
+{% extends "lms/base_with_sidebar.html" %}
+
+{% block content %}
+    <h1 class="w3-text-teal">Add new catalogue</h1>
+
+    <form method="post" enctype="multipart/form-data" action="{% url 'add_catalogue' %}">
+        {% csrf_token %}
+        <p><b>Catalogue name:</b></p>
+        <input type="text" name="catalogue_name" size="60"/>
+
+        <p><b>Catalogue description:</b></p>
+        <textarea name="catalogue_desc" rows="10" cols="60"></textarea>
+
+        <p><b>Column used for names:</b></p>
+        <input type="text" name="name_column" size="60"/>
+
+        <p><b>Column used for descriptions:</b></p>
+        <input type="text" name="description_column" size="60"/>
+
+        <p><b>Input file:</b></p>
+        <input type="file" name="input_file">
+        <button type="submit">Upload</button>
+    </form>
+{% endblock %}

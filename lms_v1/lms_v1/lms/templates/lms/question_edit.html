@@ -1,0 +1,30 @@
+{% extends "lms/base_with_sidebar.html" %}
+
+{% block content %}
+<h1 class="w3-text-teal">You're editing question "{{ question.name }}"</h1>
+
+<form action="{% url 'save_question' course.id question.id %}" method="post">
+{% csrf_token %}
+    <p><b>Question name:</b></p>
+    <input type="text" name="question_name" size="60" value="{{ question.name }}"/>
+    <p><b>Question content:</b></p>
+    <textarea name="question_content" rows="10" cols="60">{{ question.content }}</textarea>
+    <p><b>Answers (1 per row):</b></p>
+    <textarea name="question_answers" rows="10" cols="60">{{ answers }}</textarea>
+    <p><b>Correct answer #:</b></p>
+    <input type="number" name="correct_answer_num" value="{{ correct_answer_num }}">
+    </p>
+    <p>Previous slide:</p>
+    <select name="previous_slide_id" style="width:300px;">
+        {% if slide_list %}
+            {% for slide in slide_list %}
+                <option value="{{ slide.id }}" {% if slide.id == question.previous_slide_id %}selected{% endif %}>{{ slide.name }}</option>
+            {% endfor %}
+        {% endif %}
+    </select>
+    </p>
+    <input type="submit" value="Save question" />
+</form>
+
+<p><a href="/lms/course/{{ course.id }}/edit">Back to the course edit page</a></p>
+{% endblock %}

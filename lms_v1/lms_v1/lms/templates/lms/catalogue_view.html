@@ -1,0 +1,29 @@
+{% extends "lms/base_with_sidebar.html" %}
+
+{% block content %}
+    <h1 class="w3-text-teal">Catalogue "{{ catalogue.name }}"</h1>
+    <p><b>Catalogue description: </b>{{ catalogue.description }}</p>
+
+    {% if item_list %}
+        <p><b>Total item count: </b>{{ item_count }}</p>
+
+        <table width="500px">
+        <tr>
+            <td><b>Item Name</b></td>
+            <td><b>Item Description</b></td>
+            <td><b>Item Properties</b></td>
+        </tr>
+
+        {% for item in item_list %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.properties_values }}</td>
+            </tr>
+        {% endfor %}
+
+        </table>
+    {% else %}
+        <p>There are no items within this catalogue.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "lms/base_with_sidebar.html" %}
+
+{% block content %}
+<h1 class="w3-text-teal">You're adding a new test to the course "{{ course.name }}"</h1>
+    {% if test_type_list %}
+        <p><b>Please select the test type</b></p>
+        {% for test_type in test_type_list %}
+            <p><b><a href="/lms/course/{{ course_id }}/test/{{ test_type.id }}/new/">test_type.name</a></b></p>
+        {% endfor %}
+    {% endif %}
+<p><a href="/lms/course/{{ course.id }}/edit">Back to the course edit page</a></p>
+{% endblock %}

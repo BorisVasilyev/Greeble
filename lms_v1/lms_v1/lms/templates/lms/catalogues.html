@@ -1,0 +1,22 @@
+{% extends "lms/base_with_sidebar.html" %}
+
+{% block content %}
+<h1 class="w3-text-teal">List of available catalogues</h1>
+{% if catalogue_list %}
+    <table width="500px">
+        <tr>
+            <td><b>Name</b></td>
+            <td><b>Description</b></td>
+            <td></td>
+        </tr>
+        {% for catalogue in catalogue_list %}
+            <tr>
+                <td><a href="/lms/catalogue/{{ catalogue.id }}">{{ catalogue.name }}</a></td>
+                <td><a href="/lms/catalogue/{{ catalogue.id }}">{{ catalogue.description }}</a></td>
+                <td><a href="/lms/catalogue/{{ catalogue.id }}/remove">Delete</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+<p><a href="/lms/catalogue/new">Create a new catalogue</a></p>
+{% endblock %}

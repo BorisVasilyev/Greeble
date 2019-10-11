@@ -1,0 +1,31 @@
+{% extends "lms/base_with_sidebar.html" %}
+
+{% block content %}
+<h1 class="w3-text-teal">You're adding a new question to course #{{ course.id }}</h1>
+
+<form action="{% url 'add_question' course.id %}" method="post">
+{% csrf_token %}
+    <p><b>Question name:</b></p>
+    <input type="text" name="question_name" size="60"/>
+    <p><b>Question content:</b></p>
+    <textarea name="question_content" rows="10" cols="60">Put question content here.</textarea>
+    <p><b>Question answers (1 per row):</b></p>
+    <textarea name="question_answers" rows="10" cols="60">Put question answers here, 1 answer per row.</textarea>
+    <p><b>Correct answer #:</b></p>
+    <input type="number" name="correct_answer_num" value="1">
+    <p><b>Previous slide:</b></p>
+    <select name="previous_slide_id" style="width:300px;">
+        {% if slide_list %}
+            {% for slide in slide_list %}
+                {% if slide.next_slide_id == 0 %}
+                <option value="{{ slide.id }}">{{ slide.name }}</option>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </select>
+    </p>
+    <input type="submit" value="Create question" />
+</form>
+
+<p><a href="/lms/course/{{ course.id }}/edit">Back to the course edit page</a></p>
+{% endblock %}

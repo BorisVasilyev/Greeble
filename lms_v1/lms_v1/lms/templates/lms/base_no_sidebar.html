@@ -1,0 +1,13 @@
+{% extends "lms/base.html" %}
+
+<!-- Main area block -->
+{% block main_area %}
+<div class="w3-main">
+    <div class="w3-row w3-padding-64">
+        <div class="w3-twothird w3-container">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "lms/base_with_sidebar.html" %}
+
+{% block content %}
+<h1 class="w3-text-teal">You're adding a new slide to course #{{ course.id }}</h1>
+
+<form action="{% url 'add_slide' course.id %}" method="post" id="myform">
+{% csrf_token %}
+    <p><b>Slide name:</b></p>
+    <input type="text" name="slide_name" size="60"/>
+    <p><b>Previous slide:</b></p>
+    <select name="previous_slide_id" style="width:300px;">
+        {% if slide_list %}
+            {% for slide in slide_list %}
+                {% if slide.next_slide_id == 0 %}
+                <option value="{{ slide.id }}">{{ slide.name }}</option>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </select>
+
+    <link rel="canonical" href="https://quilljs.com/standalone/full/">
+    <link type="application/atom+xml" rel="alternate" href="https://quilljs.com/feed.xml" title="Quill - Your powerful rich text editor" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/monokai-sublime.min.css" />
+    <link rel="stylesheet" href="/static/website/assets/css/quill.snow.css" />
+
+    <style>
+      body > #standalone-container {
+        margin: 50px auto;
+        max-width: 720px;
+      }
+      #editor-container {
+        height: 350px;
+      }
+    </style>
+
+    <p><b>Slide content:</b></p>
+
+    <div id="standalone-container">
+      <div id="toolbar-container">
+        <span class="ql-formats">
+          <select class="ql-font"></select>
+          <select class="ql-size"></select>
+        </span>
+        <span class="ql-formats">
+          <button class="ql-bold"></button>
+          <button class="ql-italic"></button>
+          <button class="ql-underline"></button>
+          <button class="ql-strike"></button>
+        </span>
+        <span class="ql-formats">
+          <select class="ql-color"></select>
+          <select class="ql-background"></select>
+        </span>
+        <span class="ql-formats">
+          <button class="ql-script" value="sub"></button>
+          <button class="ql-script" value="super"></button>
+        </span>
+        <span class="ql-formats">
+          <button class="ql-header" value="1"></button>
+          <button class="ql-header" value="2"></button>
+          <button class="ql-blockquote"></button>
+          <button class="ql-code-block"></button>
+        </span>
+        <span class="ql-formats">
+          <button class="ql-list" value="ordered"></button>
+          <button class="ql-list" value="bullet"></button>
+          <button class="ql-indent" value="-1"></button>
+          <button class="ql-indent" value="+1"></button>
+        </span>
+        <span class="ql-formats">
+          <button class="ql-direction" value="rtl"></button>
+          <select class="ql-align"></select>
+        </span>
+        <span class="ql-formats">
+          <button class="ql-link"></button>
+          <button class="ql-image"></button>
+          <button class="ql-video"></button>
+          <button class="ql-formula"></button>
+        </span>
+        <span class="ql-formats">
+          <button class="ql-clean"></button>
+        </span>
+      </div>
+      <div id="editor-container"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+    <script src="/static/website/assets/js/quill.min.js"></script>
+
+    <input name="slide_content" type="hidden">
+
+    <p><input type="submit" value="Create slide" /></p>
+    </form>
+
+    <script>
+        var quill = new Quill('#editor-container', {
+            modules: {
+            formula: true,
+            syntax: true,
+            toolbar: '#toolbar-container'
+            },
+            placeholder: 'Compose an epic...',
+            theme: 'snow'
+            }
+        );
+
+        var myform = document.querySelector('form');
+
+        myform.onsubmit = function() {
+            // Populate hidden form on submit
+            var slide_content = document.querySelector('input[name=slide_content]');
+            slide_content.value = quill.root.innerHTML;
+
+            document.querySelector('form').submit();
+
+            return false;
+        };
+    </script>
+
+<p><a href="/lms/course/{{ course.id }}/edit">Back to the course edit page</a></p>
+{% endblock %}

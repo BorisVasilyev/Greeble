@@ -1,0 +1,52 @@
+{% extends "lms/base_with_sidebar.html" %}
+
+{% block content %}
+<h1 class="w3-text-teal">{{ course.name }}</h1>
+
+<p><b>Course description:</b> {{ course.description }}</p>
+
+<p><b>Created by:</b> {{ creator_user_name }}</p>
+
+<p><b>Publication date:</b> {{ course.publication_time }}</p>
+
+{% if modifier_user_name %}
+    <p><b>Last modified by:</b> {{ modifier_user_name }}</p>
+    <p><b>Last modification date:</b> {{ course.last_modified_time }}</p>
+{% endif %}
+
+{% if slide_list %}
+    <p><b>Slides:</b></p>
+
+    <table width="500px">
+    <tr>
+        <td><b>Name</b></td>
+        <td><b>Type</b></td>
+    </tr>
+
+    {% for slide in slide_list %}
+        <tr>
+            <td>{{ slide.name }}</td>
+            <td>{{ slide.type.name }}</td>
+        </tr>
+    {% endfor %}
+
+    </table>
+{% else %}
+    <p>There are no slides available for this course.</p>
+{% endif %}
+
+<p><b>Current status: {{ course_status }}</b></p>
+
+{% if user_is_content_manager and course.status.name == 'editing' %}
+    <p><a href="/lms/course/{{ course.id }}/publish">Publish this course</a></p>
+{% endif %}
+
+{% if course.status.name == 'published' %}
+    <p><a href="/lms/course/{{ course.id }}/slide/{{ first_slide_id }}">Start this course</a></p>
+{% endif %}
+
+{% if user_is_content_manager %}
+    <p><a href="/lms/course/{{ course.id }}/edit">Edit this course</a></p>
+{% endif %}
+
+{% endblock %}
