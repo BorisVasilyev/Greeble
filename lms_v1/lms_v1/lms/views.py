@@ -740,7 +740,7 @@ def add_context_global_vars(dict, user):
 
 
 def write_log_msg(message):
-    print('[debug] ' + message, file=sys.stderr)
+    print('[debug] ' + message, file=sys.__stderr__)
 
     logger.info(message)
 
