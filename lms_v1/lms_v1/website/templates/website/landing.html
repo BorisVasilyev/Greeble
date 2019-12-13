@@ -1,11 +1,7 @@
 {% load static %}
 
 <!DOCTYPE HTML>
-<!--
-	Eventually by HTML5 UP
-	html5up.net | @ajlkn
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
--->
+
 <html>
 	<head>
 		<title>LMS</title>
@@ -17,15 +13,19 @@
 
 		<!-- Header -->
 			<header id="header">
-				<h1>It's the fucking best Online Learning System ever.</h1>
-				<p>It will rock your socks off. Seriously though. Sign up below, you motherfucker.</p>
+				<h1>Greeble</h1>
+				<p>Welcome to Greeble - the most comprehensive Online Learning System.</p>
 			</header>
 
 		<!-- Signup Form -->
 			<form id="signup-form" method="post" action="#">
-				<input type="email" name="email" id="email" placeholder="My Stupid Email Address" />
-				<input type="submit" value="Sign Me The Fuck Up" />
+				<input type="email" name="email" id="email" placeholder="My Email Address" />
+				<input type="submit" value="Sign Up" />
 			</form>
+
+		<form id="signin-form" method="get" action="/lms/login">
+			<input type="submit" value="Log In" />
+		</form>
 
 		<!-- Scripts -->
 		<script src="{% static "/website/assets/js/main.js" %}"></script>
