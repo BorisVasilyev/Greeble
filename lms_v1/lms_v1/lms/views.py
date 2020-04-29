@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.core.files.storage import FileSystemStorage
+from django.db.models import Max
 
 import json
 import logging
@@ -12,7 +13,7 @@ import sys
 
 import csv
 
-from .models import Course, Slide, UserSlideView, Client, Catalogue, Item, ItemProperty, ItemPropertyValue, TestType
+from .models import Course, Slide, UserSlideView, Client, Catalogue, Item, ItemProperty, ItemPropertyValue, TestType, Test
 from django.contrib.auth.models import User
 
 logger = logging.getLogger(__name__)
@@ -332,138 +333,6 @@ def save_slide(request, course_id, slide_id):
 
 
 @login_required
-def new_question(request, course_id):
-    template = loader.get_template('lms/question_new.html')
-
-    course = Course.objects.get(id=course_id)
-    slide_list = Slide.objects.filter(course_id=course_id)
-
-    context = {
-        'course': course,
-        'slide_list': slide_list
-    }
-
-    context = add_context_global_vars(context, request.user)
-
-    return HttpResponse(template.render(context, request))
-
-
-@login_required
-def add_question(request, course_id):
-    question_name = request.POST['question_name']
-    question_content = request.POST['question_content']
-    answers_raw_text = request.POST['question_answers']
-    correct_answer_no = request.POST['correct_answer_num']
-    previous_slide_id = request.POST['previous_slide_id']
-
-    previous_slide = Slide.objects.get(id=previous_slide_id)
-
-    new_slide = Slide(course_id=course_id,
-                      name=question_name,
-                      type='question',
-                      content=question_content,
-                      previous_slide_id=previous_slide_id,
-                      next_slide_id=0)
-
-    new_slide.save()
-
-    # Update current last slide
-
-    previous_slide.next_slide_id = new_slide.id
-    previous_slide.save()
-
-    answers_text_list = answers_raw_text.splitlines()
-
-    for idx, answer_text in enumerate(answers_text_list, start=1):
-        if idx == int(correct_answer_no):
-            is_correct_answer = 1
-        else:
-            is_correct_answer = 0
-
-        new_answer = Answer(slide_id=new_slide.id,
-                            text=answer_text,
-                            is_correct=is_correct_answer)
-
-        new_answer.save()
-
-    return HttpResponseRedirect("/lms/course/" + str(course_id) + "/edit/")
-
-
-@login_required
-def edit_question(request, course_id, slide_id):
-    template = loader.get_template('lms/question_edit.html')
-
-    course = Course.objects.get(id=course_id)
-
-    question = course.slide_set.filter(id=slide_id).first()
-
-    slide_list = Slide.objects.filter(course_id=course_id)
-
-    answers_list = Answer.objects.filter(slide_id=slide_id)
-
-    answer_list_string = ""
-    current_answer_no = 0
-    correct_answer_no = 0
-
-    for answer in answers_list:
-        answer_list_string += answer.text + "\n"
-        current_answer_no += 1
-
-        if answer.is_correct == 1:
-            correct_answer_no = current_answer_no
-
-    context = {
-        'course': course,
-        'question': question,
-        'answers': answer_list_string,
-        'correct_answer_num': correct_answer_no,
-        'slide_list': slide_list
-    }
-
-    context = add_context_global_vars(context, request.user)
-
-    return HttpResponse(template.render(context, request))
-
-
-@login_required
-def save_question(request, course_id, slide_id):
-    question_name = request.POST['question_name']
-    question_content = request.POST['question_content']
-    answers_raw_text = request.POST['question_answers']
-    correct_answer_no = request.POST['correct_answer_num']
-    previous_slide_id = request.POST['previous_slide_id']
-
-    slide = Slide.objects.get(id=slide_id)
-
-    slide.name = question_name
-    slide.content = question_content
-    slide.previous_slide_id = previous_slide_id
-
-    slide.save()
-
-    answers_list = Answer.objects.filter(slide_id=slide_id)
-
-    for answer in answers_list:
-        answer.delete()
-
-    answers_text_list = answers_raw_text.splitlines()
-
-    for idx, answer_text in enumerate(answers_text_list, start=1):
-        if idx == int(correct_answer_no):
-            is_correct_answer = 1
-        else:
-            is_correct_answer = 0
-
-        new_answer = Answer(slide_id=slide.id,
-                            text=answer_text,
-                            is_correct=is_correct_answer)
-
-        new_answer.save()
-
-    return HttpResponseRedirect("/lms/course/" + str(course_id) + "/edit/")
-
-
-@login_required
 @csrf_exempt
 def validate_answer(request):
     received_json_data = json.loads(request.body)
@@ -740,9 +609,9 @@ def add_context_global_vars(dict, user):
 
 
 def write_log_msg(message):
-    print('[debug] ' + message, file=sys.__stderr__)
+    print('[debug] ' + str(message), file=sys.__stderr__)
 
-    logger.info(message)
+    logger.info(str(message))
 
 
 def check_if_course_completed(cur_course_id, cur_user_id):
@@ -778,3 +647,157 @@ def new_test(request, course_id):
     context = add_context_global_vars(context, request.user)
 
     return HttpResponse(template.render(context, request))
+
+
+@login_required
+def add_test(request, course_id):
+    # Prepare test JSON
+    question_caption = request.POST['question_caption']
+    question_content = request.POST['question_content']
+
+    answers = []
+    answ_index = 1
+
+    while ('answ_text_' + str(answ_index)) in request.POST:
+        answ_dict = {}
+
+        answ_dict["answer_index"] = str(answ_index)
+        answ_dict["answer_is_correct"] = (request.POST['answ_radio'] == 'answ_radio_' + str(answ_index))
+        answ_dict["answer_text"] = request.POST['answ_text_' + str(answ_index)]
+
+        answers.append(answ_dict)
+
+        answ_index += 1
+
+    answers_json = json.dumps(answers)
+
+    # Create a new test
+    test = Test(
+        content=answers_json,
+        max_points=1,
+        created_time=timezone.now(),
+        created_by_user_id=get_user_client_id(request.user),
+        type_id=1
+    )
+
+    test.save()
+
+    # Get maximum slide ID
+    previous_slide_id = Slide.objects.filter(course_id=course_id).aggregate(Max('id'))['id__max']
+
+    if previous_slide_id is None:
+        previous_slide_id = 0
+
+    # Create a new slide with type "test"
+    new_slide = Slide(course_id=course_id,
+                      name=question_caption,
+                      content=question_content,
+                      type_id=2,
+                      previous_slide_id=previous_slide_id,
+                      next_slide_id=0,
+                      test_id=test.id,
+                      created_time=timezone.now(),
+                      created_by_user_id=get_user_client_id(request.user)
+    )
+
+    new_slide.save()
+
+    # Update the previous slide
+    if previous_slide_id != 0:
+        previous_slide = Slide.objects.get(id=previous_slide_id)
+
+        if previous_slide is not None:
+            previous_slide.next_slide_id = new_slide.id
+            previous_slide.save()
+
+    '''
+    answers_text_list = answers_raw_text.splitlines()
+
+    for idx, answer_text in enumerate(answers_text_list, start=1):
+        if idx == int(correct_answer_no):
+            is_correct_answer = 1
+        else:
+            is_correct_answer = 0
+
+        new_answer = Answer(slide_id=new_slide.id,
+                            text=answer_text,
+                            is_correct=is_correct_answer)
+
+        new_answer.save()
+    '''
+
+    return HttpResponseRedirect("/lms/course/" + str(course_id) + "/edit/")
+
+
+@login_required
+def edit_test(request, course_id, slide_id):
+    template = loader.get_template('lms/question_edit.html')
+
+    course = Course.objects.get(id=course_id)
+
+    question = course.slide_set.filter(id=slide_id).first()
+
+    slide_list = Slide.objects.filter(course_id=course_id)
+
+    answers_list = Answer.objects.filter(slide_id=slide_id)
+
+    answer_list_string = ""
+    current_answer_no = 0
+    correct_answer_no = 0
+
+    for answer in answers_list:
+        answer_list_string += answer.text + "\n"
+        current_answer_no += 1
+
+        if answer.is_correct == 1:
+            correct_answer_no = current_answer_no
+
+    context = {
+        'course': course,
+        'question': question,
+        'answers': answer_list_string,
+        'correct_answer_num': correct_answer_no,
+        'slide_list': slide_list
+    }
+
+    context = add_context_global_vars(context, request.user)
+
+    return HttpResponse(template.render(context, request))
+
+
+@login_required
+def save_test(request, course_id, slide_id):
+    question_name = request.POST['question_name']
+    question_content = request.POST['question_content']
+    answers_raw_text = request.POST['question_answers']
+    correct_answer_no = request.POST['correct_answer_num']
+    previous_slide_id = request.POST['previous_slide_id']
+
+    slide = Slide.objects.get(id=slide_id)
+
+    slide.name = question_name
+    slide.content = question_content
+    slide.previous_slide_id = previous_slide_id
+
+    slide.save()
+
+    answers_list = Answer.objects.filter(slide_id=slide_id)
+
+    for answer in answers_list:
+        answer.delete()
+
+    answers_text_list = answers_raw_text.splitlines()
+
+    for idx, answer_text in enumerate(answers_text_list, start=1):
+        if idx == int(correct_answer_no):
+            is_correct_answer = 1
+        else:
+            is_correct_answer = 0
+
+        new_answer = Answer(slide_id=slide.id,
+                            text=answer_text,
+                            is_correct=is_correct_answer)
+
+        new_answer.save()
+
+    return HttpResponseRedirect("/lms/course/" + str(course_id) + "/edit/")

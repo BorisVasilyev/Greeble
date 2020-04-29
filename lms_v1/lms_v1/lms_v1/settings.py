@@ -108,7 +108,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'C:\\Users\\Boris\\Documents\\Coding\\LMS\\lms_v1\\lms_v1\\debug.log',
+            'filename': 'C:\\Users\\Boris\\Documents\\Coding\\Greeble\\lms_v1\\lms_v1\\debug.log',
         },
     },
     'loggers': {

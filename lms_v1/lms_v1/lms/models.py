@@ -70,7 +70,7 @@ class TestType(models.Model):
 
 class Test(models.Model):
     type = models.ForeignKey(TestType, on_delete=models.CASCADE, blank=True, null=True)
-    content_xml = models.CharField(max_length=2000, blank=True, null=True)
+    content = models.CharField(max_length=2000, blank=True, null=True)
     max_points = models.IntegerField(blank=True, null=True)
     created_by_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+', blank=True, null=True)
     modified_by_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+', blank=True, null=True)

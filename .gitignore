@@ -1,3 +1,6 @@
 
 *.pyc
 *.log
+lms_v1/lms_v1/debug.log
+*.pyc
+*.pyc

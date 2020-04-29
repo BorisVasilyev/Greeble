@@ -114,11 +114,11 @@
             var slide_content = document.querySelector('input[name=slide_content]');
             slide_content.value = quill.root.innerHTML;
 
-            document.querySelector('form').submit();
+            document.querySelector('myform').submit();
 
             return false;
         };
     </script>
 
-<p><a href="/lms/course/{{ course.id }}/edit">Back to the course edit page</a></p>
+    <p><a href="/lms/course/{{ course.id }}/edit">Back to the course edit page</a></p>
 {% endblock %}
