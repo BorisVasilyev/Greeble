@@ -13,7 +13,8 @@ import sys
 
 import csv
 
-from .models import Course, Slide, UserSlideView, Client, Catalogue, Item, ItemProperty, ItemPropertyValue, TestType, Test
+from .models import Course, Slide, UserSlideView, Client, Catalogue, Item, ItemProperty, ItemPropertyValue, \
+    TestType, Test, UserTestResult
 from django.contrib.auth.models import User
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,9 @@ def index(request):
 def courses(request):
     template = loader.get_template('lms/courses.html')
 
-    course_list = Course.objects.filter(client_id=get_user_client_id(request.user))
+    print(get_user_client_id(request.user))
+
+    course_list = Course.objects.filter(created_by_user_id=request.user.id)
 
     for course in course_list:
         course.is_completed = check_if_course_completed(course.id, request.user.id)
@@ -95,10 +98,56 @@ def publish_course(request, course_id):
     return HttpResponseRedirect("/lms/course/" + str(course_id) + "/")
 
 
-@login_required
-def view_slide(request, course_id, slide_id):
+def render_slide(slide, course, request):
+    previous_slide_id = slide.previous_slide_id
+    next_slide_id = slide.next_slide_id
+
+    max_slides = course.slide_set.count()
+
+    context = {
+        'course': course,
+        'slide': slide,
+        'next_slide_id': next_slide_id,
+        'previous_slide_id': previous_slide_id,
+        'max_slides': max_slides
+    }
+
+    context = add_context_global_vars(context, request.user)
+
     template = loader.get_template('lms/slide_view.html')
 
+    return HttpResponse(template.render(context, request))
+
+
+def render_test(slide, course, request):
+    previous_slide_id = slide.previous_slide_id
+    next_slide_id = slide.next_slide_id
+
+    max_slides = course.slide_set.count()
+
+    test = slide.test
+
+    answers_dict = json.loads(slide.test.content)
+
+    context = {
+        'course': course,
+        'slide': slide,
+        'test': test,
+        'next_slide_id': next_slide_id,
+        'previous_slide_id': previous_slide_id,
+        'max_slides': max_slides,
+        'answers_list': answers_dict
+    }
+
+    context = add_context_global_vars(context, request.user)
+
+    template = loader.get_template('lms/question_view.html')
+
+    return HttpResponse(template.render(context, request))
+
+
+@login_required
+def view_slide(request, course_id, slide_id):
     # Record user viewing the slide
     if request.user.is_authenticated:
         current_user_id = request.user.id
@@ -122,37 +171,16 @@ def view_slide(request, course_id, slide_id):
             slide_view.save()
 
     course = Course.objects.get(id=course_id)
-
     slide = course.slide_set.filter(id=slide_id).first()
 
-    previous_slide_id = slide.previous_slide_id
-    next_slide_id = slide.next_slide_id
+    if slide.type.code == 'slide':
+        response = render_slide(slide, course, request)
+    elif slide.type.code == 'test':
+        response = render_test(slide, course, request)
+    else:
+        response = HttpResponseRedirect("/lms/course/" + str(course_id) + "/")
 
-    max_slides = course.slide_set.count()
-
-    # if slide.type == 'question':
-    #     answer_list = Answer.objects.filter(slide=slide_id)
-    #
-    #     context = {
-    #         'course': course,
-    #         'slide': slide,
-    #         'next_slide_id': next_slide_id,
-    #         'previous_slide_id': previous_slide_id,
-    #         'max_slides': max_slides,
-    #         'answers_list': answer_list
-    #     }
-    # else:
-    context = {
-        'course': course,
-        'slide': slide,
-        'next_slide_id': next_slide_id,
-        'previous_slide_id': previous_slide_id,
-        'max_slides': max_slides
-    }
-
-    context = add_context_global_vars(context, request.user)
-
-    return HttpResponse(template.render(context, request))
+    return response
 
 
 @login_required
@@ -337,17 +365,35 @@ def save_slide(request, course_id, slide_id):
 def validate_answer(request):
     received_json_data = json.loads(request.body)
 
-    slide_id = received_json_data['cur_slide_id']
+    test_id = received_json_data['cur_test_id']
     answer_id = received_json_data['cur_answer_id']
 
-    print("Validate_answer method called. Request slide_id: " + str(slide_id) + " Request answer_id: " + str(answer_id))
+    test = Test.objects.get(id=test_id)
 
-    is_answer_correct = Answer.objects.get(id=answer_id).is_correct
+    answers = json.loads(test.content)
 
-    print("Is answer correct: " + str(is_answer_correct))
+    is_answer_correct = False
+    points = 0
+
+    for answ in answers:
+        if answ["answer_index"] == answer_id and answ["answer_is_correct"] is True:
+            is_answer_correct = True
+            points = test.max_points
+
+    # Check the answer history and update
+    answer_exists = (UserTestResult.objects.filter(user_id=request.user.id).filter(test_id=test.id).count() > 0)
+
+    if not answer_exists:
+        test_result = UserTestResult(
+            test_id=test.id,
+            user_id=request.user.id,
+            points=points,
+            last_pass_time=timezone.now()
+        )
+
+        test_result.save()
 
     response = "false"
-
     if is_answer_correct == 1:
         response = "true"
 

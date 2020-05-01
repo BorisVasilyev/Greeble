@@ -45,7 +45,8 @@
 {% endblock %}
 
 {% block content %}
-<h1 class="w3-text-teal">{{ course.name }}: {{ slide.name }}</h1>
+<p><h2 class="w3-text-teal">{{ course.name }}</h2></p>
+<p><h1 class="w3-text-teal">{{ slide.name }}</h1></p>
 <p>
 {% autoescape off %}
     {{ slide.content|safe }}
