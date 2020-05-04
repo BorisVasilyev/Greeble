@@ -1,0 +1,108 @@
+{% extends "lms/slide_view_base.html" %}
+
+{% block script %}
+<script>
+    const test_id={{ test.id }}
+
+    window.onload = function() {
+        var a = document.getElementById("check_answer");
+
+        a.onclick = function() {
+            options = document.getElementsByName("options");
+
+            selected_answer_id = 0;
+
+            for(i = 0; i < options.length; i++) {
+                if(options[i].checked == true) {
+                    selected_answer_id = options[i].value;
+                }
+            }
+
+            if(selected_answer_id != 0) {
+                var answer_data = JSON.stringify({cur_test_id: test_id, cur_answer_id: selected_answer_id});
+
+                params = {headers:{"content-type":"application/json; charset=UTF-8"}, body:answer_data, method:"POST"};
+
+                fetch('/lms/validate_answer', params).then(function(response){return response.text().then(function(text) {
+                    res = document.getElementById("result");
+
+                    var finish_course_button = document.getElementById("finish_course");
+
+                    var check_result_button = document.getElementById("check_answer");
+
+                    var expl = document.getElementById("answer_explanation");
+
+                    var resp = JSON.parse(text);
+
+                    if (resp.result == "true") {
+                        res.textContent = "Correct!";
+                        res.style.color = "#00ff00";
+
+                        finish_course_button.style.visibility = "visible";
+
+                        check_result_button.style.visibility = "hidden";
+
+                        expl.textContent = resp.answer_explanation;
+                    } else {
+                        res.textContent = "Incorrect :(";
+                        res.style.color = "#ff0000";
+                    }
+                })});
+            }
+
+            return false;
+        }
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+
+<p><h2 class="w3-text-teal">{{ course.name }}</h2></p>
+<p><h1 class="w3-text-teal">{{ slide.name }}</h1></p>
+
+<p>
+{% autoescape off %}
+    {{ slide.content|safe }}
+{% endautoescape %}
+</p>
+
+<p>Select your answer:</p>
+{% for answer in answers_list %}
+    <input type="radio" name="options" id="option_{{ answer.answer_index }}" value="{{ answer.answer_index }}">{{ answer.answer_text }}</p>
+{% endfor %}
+
+<a id="check_answer" href="#">Check my answer</a>
+
+<p id="result"></p>
+
+<p id="answer_explanation"></p>
+
+<div id="nav-bar" style="width: 100%; overflow: hidden;">
+    <div id="prev_slide" style="width: 50%; float: left;">
+        {% if previous_slide_id > 0 %}
+            <a href="/lms/course/{{ course.id }}/slide/{{ previous_slide_id }}">Previous slide</a>
+        {% else %}
+            <p> </p>
+        {% endif %}
+    </div>
+    <div id="next_slide" style="width: 50%; float: left; text-align: right;">
+        {% if next_slide_id > 0 %}
+            <a href="/lms/course/{{ course.id }}/slide/{{ next_slide_id }}">Next slide</a>
+        {% else %}
+            <p> </p>
+        {% endif %}
+    </div>
+</div>
+
+<p id="finish_course"
+   {% if is_course_completed == False %}
+        style="visibility: hidden;"
+   {% endif %}
+    >
+        <a href="/lms/course/{{ course.id }}/finish">Finish course</a>
+</p>
+
+
+<p><a href="/lms/course/{{ course.id }}">Back to the course</a></p>
+{% endblock %}
