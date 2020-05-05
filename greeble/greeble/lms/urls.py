@@ -1,6 +1,8 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
+from django.conf.urls.static import static
+from django.conf import settings
 
 from . import views
 
@@ -36,5 +38,8 @@ urlpatterns = [
     # path('/catalogue/new', views.new_catalogue, name='new_catalogue'),
     # path('/catalogue/add', views.add_catalogue, name='add_catalogue'),
     # path('/catalogue/<int:catalogue_id>/', views.view_catalogue, name='view_catalogue'),
-    path('/admin/', admin.site.urls)
+    path('/admin/', admin.site.urls),
+
+    # TODO: Remove for production
+    path('/test', views.test, name='test'),
 ]

@@ -1,0 +1,60 @@
+{% extends "lms/base/base.html" %}
+
+{% load static %}
+
+{% block content %}
+    {% if published_course_list %}
+        <h4>Published Courses</h4>
+        <div class="columns" style="padding-top: 10px; padding-bottom: 10px;">
+            {% for course in published_course_list %}
+                <div class="column col-2">
+                    <div class="card">
+                      <div class="card-image">
+                        <img style="width: 100%; max-height: 200px;" src="{{ course.cover_url }}" class="img-responsive">
+                      </div>
+                      <div class="card-header">
+                          <div class="card-title h5">
+                              <a href="/lms/course/{{ course.id }}">{{ course.name }}</a>
+                          </div>
+                          <div class="card-subtitle text-gray">
+                              <a href="/lms/course/{{ course.id }}">by {{ course.created_by_user.username }}</a>
+                          </div>
+                      </div>
+                        <div class="card-body">
+                            <span class="label label-success">Published</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if draft_course_list %}
+        <h4>Drafts</h4>
+
+        <div class="columns" style="padding-top: 10px; padding-bottom: 10px;">
+            {% for course in draft_course_list %}
+                <div class="column col-2">
+                    <div class="card">
+                      <div class="card-image">
+                        <img style="width: 100%; max-height: 200px;" src="{{ course.cover_url }}" class="img-responsive">
+                      </div>
+                      <div class="card-header">
+                          <div class="card-title h5">
+                              <a href="/lms/course/{{ course.id }}">{{ course.name }}</a>
+                          </div>
+                          <div class="card-subtitle text-gray">
+                              <a href="/lms/course/{{ course.id }}">by {{ course.created_by_user.username }}</a>
+                          </div>
+                      </div>
+                        <div class="card-body">
+                            <span class="label label-warning">Draft</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <button class="btn btn-primary" onclick="window.location.href = '/lms/course/new';">Create new course</button>
+{% endblock %}

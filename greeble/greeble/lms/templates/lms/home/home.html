@@ -1,0 +1,53 @@
+{% extends "lms/base/base.html" %}
+
+{% load static %}
+
+{% block content %}
+    <h1>Welcome to Greeble!</h1>
+
+    {% if course_in_progress_list %}
+        <h4>Ongoing courses</h4>
+
+        <div class="columns" style="padding-top: 10px; padding-bottom: 10px;">
+            {% for course in course_in_progress_list %}
+                <div class="column col-2">
+                    <div class="card">
+                      <div class="card-image">
+                        <img style="width: 100%; max-height: 200px;" src="{{ course.cover_url }}" class="img-responsive">
+                      </div>
+                      <div class="card-header">
+                          <div class="card-title h5"><a href="/lms/course/{{ course.id }}">{{ course.name }}</a></div>
+                        <div class="card-subtitle text-gray">by {{ course.created_by_user.username }}</div>
+                      </div>
+                      <div class="card-footer">
+                        <button class="btn btn-primary">Continue</button>
+                      </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if available_course_list %}
+        <h4>Courses made by others</h4>
+
+        <div class="columns" style="padding-top: 10px; padding-bottom: 10px;">
+            {% for course in available_course_list %}
+                <div class="column col-2">
+                    <div class="card">
+                      <div class="card-image">
+                        <img style="width: 100%; max-height: 200px;" src="{{ course.cover_url }}" class="img-responsive">
+                      </div>
+                      <div class="card-header">
+                          <div class="card-title h5"><a href="/lms/course/{{ course.id }}">{{ course.name }}</a></div>
+                        <div class="card-subtitle text-gray">by {{ course.created_by_user.username }}</div>
+                      </div>
+                      <div class="card-footer">
+                        <button class="btn btn-primary">View</button>
+                      </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

@@ -132,3 +132,4 @@ LOGIN_URL = '/lms/login'
 LOGOUT_REDIRECT_URL = '/lms/login'
 
 MEDIA_ROOT = 'upload/'
+MEDIA_URL = 'upload/'

@@ -22,12 +22,16 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def home(request):
-    template = loader.get_template('lms/home.html')
+    template = loader.get_template('lms/home/home.html')
 
     course_in_progress_list = Course.objects.filter(usercoursestatus__user_id=request.user.id,
                                                     usercoursestatus__course_is_in_progress=True).all()
 
     available_course_list = Course.objects.all()
+
+    for course in available_course_list:
+        if course.cover_filename is not None:
+            course.cover_url = '/static/lms/upload/course/cover/' + course.cover_filename
 
     context = {
         'course_in_progress_list': course_in_progress_list,
@@ -41,17 +45,20 @@ def home(request):
 
 @login_required
 def my_courses(request):
-    template = loader.get_template('lms/my_courses.html')
+    template = loader.get_template('lms/my_courses/my_courses.html')
 
     published_course_list = Course.objects.filter(created_by_user_id=request.user.id).filter(status__name='published')
 
     draft_course_list = Course.objects.filter(created_by_user_id=request.user.id).filter(status__name='editing')
 
-    # completed_course_list = Course.objects.filter(usercoursestatus__user_id=request.user.id,
-    #                                              usercoursestatus__course_is_completed=True).all()
+    # TODO: Make into in-class method
+    for course in published_course_list:
+        if course.cover_filename is not None:
+            course.cover_url = '/static/lms/upload/course/cover/' + course.cover_filename
 
-    # for course in course_list:
-    #    course.is_completed = check_if_course_completed(course.id, request.user.id)
+    for course in draft_course_list:
+        if course.cover_filename is not None:
+            course.cover_url = '/static/lms/upload/course/cover/' + course.cover_filename
 
     context = {
         'published_course_list': published_course_list,
@@ -65,7 +72,7 @@ def my_courses(request):
 
 # @login_required
 def view_course(request, course_id):
-    template = loader.get_template('lms/course_details.html')
+    template = loader.get_template('lms/course/course_details.html')
 
     course = Course.objects.get(id=course_id)
 
@@ -81,7 +88,11 @@ def view_course(request, course_id):
     creator = User.objects.get(id=course.created_by_user_id)
 
     # TODO: Change to dynamic link generation
-    course_link = 'http://127.0.0.1:8000/lms/course/' + str(course.id)
+    course_link = 'http://127.0.0.1/lms/course/' + str(course.id)
+
+    # TODO: Make into in-class method
+    if course.cover_filename is not None:
+        course.cover_url = '/static/lms/upload/course/cover/' + course.cover_filename
 
     context = {
         'course': course,
@@ -293,7 +304,7 @@ def remove_course(request, course_id):
 
 @login_required
 def new_course(request):
-    template = loader.get_template('lms/course_new.html')
+    template = loader.get_template('lms/course/course_new.html')
 
     context = {}
 
@@ -947,3 +958,11 @@ def finish_course(request, course_id):
             new_status.save()
 
     return HttpResponseRedirect("/lms")
+
+
+def test(request):
+    template = loader.get_template('lms/base/base.html')
+
+    context = {}
+
+    return HttpResponse(template.render(context, request))

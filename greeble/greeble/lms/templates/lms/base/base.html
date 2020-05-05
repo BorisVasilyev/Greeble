@@ -1,0 +1,53 @@
+{% load static %}
+
+<html>
+    <title>Greeble</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="{% static "/lms/spectre/spectre.min.css" %}">
+    <link rel="stylesheet" href="{% static "/lms/spectre/spectre-exp.min.css" %}">
+    <link rel="stylesheet" href="{% static "/lms/spectre/spectre-icons.min.css" %}">
+
+    {% load static %}
+
+    {% block script %}
+    {% endblock %}
+
+    <body>
+        <header class="navbar" style="background: #202B37;">
+            <a href="/lms"><img src="{% static "/lms/img/greeble_logo_small.png" %}"></a>
+            <section class="navbar-section">
+                <a href="#" style="color: white;"><img src="{% static "/lms/img/user_icon.png" %}"></a>
+                <a href="#" class="btn btn-link" style="color: white;">{{ user.username }}</a>
+            </section>
+        </header>
+
+        <div class="docs-container off-canvas off-canvas-sidebar-show">
+
+            <div class="docs-sidebar off-canvas-sidebar" style="background: #202B37;">
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="text-light" href="/lms">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="text-light" href="/lms/my_courses">My Courses</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="text-light" href="#">Settings</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="off-canvas-content" style="border-top-width: 3px; border-top-color: #ED1566; border-top-style: solid; ">
+                <div class="columns col-gapless">
+                    <div class="column col-9" style="padding-left: 20px;">
+                        {% block content %}
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,76 @@
+{% extends "lms/base/base.html" %}
+
+{% load static %}
+
+{% block content %}
+    {% if not user.is_authenticated %}
+        <p>Please <a href="/signup">sign up</a> or <a href="/lms/login">log in</a> to start this course</p>
+    {% endif %}
+
+    <div class="columns" style="padding-top: 10px; padding-bottom: 10px;">
+        <div class="column col-2">
+            <img style="width: 100%; max-height: 200px;" src="{{ course.cover_url }}" class="img-responsive">
+        </div>
+        <div class="column col-9">
+            <h4>{{ course.name }}</h4>
+
+            <p>{{ course.description }}</p>
+
+            <p>Created by: {{ creator_user_name }}</p>
+
+            <p>Publication date: {{ course.publication_time }}</p>
+        </div>
+    </div>
+    <div class="columns" style="padding-top: 10px; padding-bottom: 10px;">
+        <div class="column col-9">
+            {% if slide_list %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for slide in slide_list %}
+                            <tr>
+                                <td>{{ slide.name }}</td>
+                                <td>{{ slide.type.name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>There are no slides available for this course.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="columns" style="padding-top: 10px; padding-bottom: 10px;">
+        <div class="column col-9">
+            {% if user.is_authenticated %}
+                <p>Current status: <span class="label label-success">{{ course_status }}</span></p>
+
+                <p>Course link: <a href="{{ course_link }}">{{ course_link }}</a></p>
+
+                {% if course.status.name == 'published' %}
+                    <p><button class="btn btn-primary" onclick="window.location.href = '/lms/course/{{ course.id }}/slide/{{ first_slide_id }}';">Start course</button></p>
+                {% endif %}
+
+                {% if course.created_by_user_id == user.id and course.status.name == 'editing' %}
+                    <button class="btn btn-success" onclick="window.location.href = '/lms/course/{{ course.id }}/publish';">Publish course</button>
+                {% endif %}
+
+                {% if course.created_by_user_id == user.id %}
+                    <button class="btn" onclick="window.location.href = '/lms/course/{{ course.id }}/edit';">Edit course</button>
+                {% endif %}
+
+                {% if course.created_by_user_id == user.id %}
+                    <button class="btn btn-error" onclick="window.location.href = '/lms/course/{{ course.id }}/remove';">Delete course</button>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+
+{% endblock %}
